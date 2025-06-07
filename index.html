@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>病理部實習模擬</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+        .step-section {
+            display: none;
+        }
+        .active-section {
+            display: block;
+        }
+        .progress-bar-fill {
+            transition: width 0.5s ease-in-out;
+        }
+        .modal {
+            transition: opacity 0.3s ease;
+        }
+        .microscope-view {
+            background-size: cover;
+            background-position: center;
+            border: 4px solid #333;
+            border-radius: 50%;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+        }
+        .microscope-view::before {
+            content: '';
+            display: block;
+            padding-top: 100%; /* Aspect ratio 1:1 */
+        }
+        .microscope-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.3);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 1.25rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .microscope-view:hover .microscope-overlay {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-4xl">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-blue-800">病理部實習模擬</h1>
+            <p class="text-gray-600 mt-2">體驗從檢體接收到發出報告的完整流程</p>
+        </header>
+
+        <!-- Progress Bar -->
+        <div class="mb-8">
+            <div class="bg-gray-200 rounded-full h-4">
+                <div id="progress-bar" class="bg-blue-600 rounded-full h-4 text-center text-white text-xs" style="width: 0%;"></div>
+            </div>
+            <div class="flex justify-between text-xs mt-1 text-gray-500">
+                <span>案例接收</span>
+                <span>總體檢查</span>
+                <span>鏡檢</span>
+                <span>診斷</span>
+                <span>報告</span>
+            </div>
+        </div>
+
+        <main id="simulation-container" class="bg-white rounded-lg shadow-xl p-6 md:p-8">
+            <!-- Step 1: Case Arrival -->
+            <div id="step-1" class="step-section active-section">
+                <h2 class="text-2xl font-bold text-gray-700 border-b pb-2 mb-4">第一站：案例接收</h2>
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <h3 class="font-semibold text-lg mb-2">新案例詳情</h3>
+                    <p><strong>病歷號：</strong> 10-345-6789</p>
+                    <p><strong>姓名：</strong> 陳小明</p>
+                    <p><strong>年齡：</strong> 22歲</p>
+                    <p><strong>臨床診斷：</strong> 右下腹痛，懷疑急性闌尾炎</p>
+                    <p><strong>送檢檢體：</strong> 闌尾 (Appendix)</p>
+                </div>
+                <div class="text-center mt-6">
+                    <button onclick="nextStep()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transition-transform transform hover:scale-105">
+                        確認接收，前往總體檢查
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 2: Gross Examination -->
+            <div id="step-2" class="step-section">
+                <h2 class="text-2xl font-bold text-gray-700 border-b pb-2 mb-4">第二站：總體檢查 (Gross Examination)</h2>
+                <p class="mb-4">請觀察下方的檢體，並從選項中選擇最符合的描述。</p>
+                <div class="flex flex-col md:flex-row gap-6 items-center">
+                    <div class="md:w-1/2">
+                        <img src="https://placehold.co/400x300/f0e6e6/774a4a?text=闌尾檢體" alt="闌尾檢體" class="rounded-lg shadow-md w-full">
+                        <p class="text-center text-sm mt-2 text-gray-500">一個已切開的闌尾檢體</p>
+                    </div>
+                    <div class="md:w-1/2 space-y-4">
+                        <div>
+                            <label for="gross-appearance" class="font-semibold block mb-1">外觀描述：</label>
+                            <select id="gross-appearance" class="w-full p-2 border rounded-md">
+                                <option value="表面平滑，無腫脹">表面平滑，無腫脹</option>
+                                <option value="表面覆蓋膿苔，腫脹且緊繃">表面覆蓋膿苔，腫脹且緊繃</option>
+                                <option value="表面呈現深黑色壞死">表面呈現深黑色壞死</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="gross-size" class="font-semibold block mb-1">大小 (長度)：</label>
+                             <select id="gross-size" class="w-full p-2 border rounded-md">
+                                <option value="約 3.5 公分">約 3.5 公分</option>
+                                <option value="約 8.5 公分">約 8.5 公分</option>
+                                <option value="約 15 公分">約 15 公分</option>
+                            </select>
+                        </div>
+                         <p class="text-sm text-gray-600 bg-yellow-100 p-2 rounded-md">提示：急性發炎的闌尾通常會腫脹，且表面可能因發炎反應而覆蓋纖維蛋白或膿苔。</p>
+                    </div>
+                </div>
+                <div class="text-center mt-8">
+                    <button onclick="nextStep()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transition-transform transform hover:scale-105">
+                        完成取材，送交組織處理並鏡檢
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 3: Microscopic Examination -->
+            <div id="step-3" class="step-section">
+                <h2 class="text-2xl font-bold text-gray-700 border-b pb-2 mb-4">第三站：顯微鏡檢查 (Microscopic Examination)</h2>
+                <p class="mb-4">組織已切片並染色完成。請點擊下方的虛擬視野，在低倍鏡與高倍鏡之間切換觀察。</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div id="low-power-view" class="microscope-view" style="background-image: url('https://placehold.co/400x400/d1e3ff/3b82f6?text=低倍鏡視野+(40x)')" onclick="showModal('low')">
+                        <div class="microscope-overlay"><p>點擊查看<br>低倍鏡 (Low Power)</p></div>
+                    </div>
+                    <div id="high-power-view" class="microscope-view" style="background-image: url('https://placehold.co/400x400/e0d1ff/8b5cf6?text=高倍鏡視野+(400x)')" onclick="showModal('high')">
+                        <div class="microscope-overlay"><p>點擊查看<br>高倍鏡 (High Power)</p></div>
+                    </div>
+                </div>
+                 <div class="mt-4 bg-yellow-100 p-3 rounded-md text-sm text-gray-700">
+                    <p><strong>觀察重點：</strong></p>
+                    <ul class="list-disc list-inside ml-2">
+                        <li><strong>低倍鏡：</strong>觀察闌尾壁的整體結構是否完整，黏膜層、肌肉層是否有發炎細胞浸潤。</li>
+                        <li><strong>高倍鏡：</strong>尋找關鍵的發炎細胞，例如：<strong>嗜中性球 (Neutrophils)</strong> 是否浸潤於肌肉層。這是診斷急性闌尾炎的關鍵特徵。</li>
+                    </ul>
+                </div>
+                <div class="text-center mt-8">
+                    <button onclick="nextStep()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transition-transform transform hover:scale-105">
+                        觀察完畢，前往病理診斷
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 4: Diagnosis -->
+            <div id="step-4" class="step-section">
+                <h2 class="text-2xl font-bold text-gray-700 border-b pb-2 mb-4">第四站：病理診斷 (Pathological Diagnosis)</h2>
+                <p class="mb-4">綜合總體檢查和顯微鏡下的發現，請做出您的診斷。</p>
+                <div id="diagnosis-options" class="space-y-3">
+                    <button onclick="selectDiagnosis(this, false)" class="block w-full text-left p-3 bg-gray-100 hover:bg-blue-100 border border-gray-200 rounded-lg transition">A) 正常闌尾 (Normal appendix)</button>
+                    <button onclick="selectDiagnosis(this, true)" class="block w-full text-left p-3 bg-gray-100 hover:bg-blue-100 border border-gray-200 rounded-lg transition">B) 急性化膿性闌尾炎 (Acute suppurative appendicitis)</button>
+                    <button onclick="selectDiagnosis(this, false)" class="block w-full text-left p-3 bg-gray-100 hover:bg-blue-100 border border-gray-200 rounded-lg transition">C) 闌尾類癌 (Carcinoid tumor of appendix)</button>
+                </div>
+                <div id="feedback" class="mt-4 p-3 rounded-md text-sm hidden"></div>
+                <div class="text-center mt-8">
+                    <button id="to-report-btn" onclick="nextStep()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transition-transform transform hover:scale-105 disabled:bg-gray-400 disabled:cursor-not-allowed" disabled>
+                        完成診斷，產出報告
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Step 5: Final Report -->
+            <div id="step-5" class="step-section">
+                <h2 class="text-2xl font-bold text-gray-700 border-b pb-2 mb-4">最終站：病理報告</h2>
+                <div class="bg-gray-50 border border-gray-200 rounded-lg p-6 font-mono text-sm leading-relaxed">
+                    <h3 class="text-center font-bold text-lg mb-4">組織病理學報告</h3>
+                    <div class="grid grid-cols-2 gap-x-4 gap-y-2 mb-4">
+                        <p><strong>病歷號:</strong> 10-345-6789</p>
+                        <p><strong>姓名:</strong> 陳小明</p>
+                        <p><strong>收件日期:</strong> <span id="report-date"></span></p>
+                        <p><strong>報告醫師:</strong> [實習醫師 <span class="font-sans">您的名字</span>]</p>
+                    </div>
+                    <hr class="my-3">
+                    <p><strong>臨床診斷:</strong> 右下腹痛，懷疑急性闌尾炎</p>
+                    <p><strong>送檢檢體:</strong> 闌尾 (Appendix)</p>
+                    <hr class="my-3">
+                    <div>
+                        <h4 class="font-bold mb-1">總體所見 (Gross Finding):</h4>
+                        <p id="report-gross" class="pl-4"></p>
+                    </div>
+                    <div class="mt-2">
+                        <h4 class="font-bold mb-1">顯微所見 (Microscopic Finding):</h4>
+                        <p class="pl-4">
+                        在顯微鏡下，可見闌尾的管壁結構。其特徵為大量發炎細胞浸潤，尤其可見大量<strong class="text-red-600">嗜中性球 (neutrophils)</strong> 浸潤穿透黏膜下層至肌肉層，符合急性發炎的組織學變化。
+                        </p>
+                    </div>
+                     <div class="mt-4">
+                        <h4 class="font-bold mb-1">病理診斷 (PATHOLOGIC DIAGNOSIS):</h4>
+                        <p id="report-diagnosis" class="pl-4 font-bold text-blue-800"></p>
+                    </div>
+                </div>
+                 <div class="text-center mt-8">
+                    <button onclick="restart()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transition-transform transform hover:scale-105">
+                        完成！再試一個新案例
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal -->
+    <div id="microscope-modal" class="modal fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 hidden opacity-0" onclick="closeModal()">
+        <div class="bg-white rounded-lg shadow-2xl max-w-3xl w-full max-h-full overflow-y-auto" onclick="event.stopPropagation()">
+            <div class="p-4">
+                 <h3 id="modal-title" class="text-xl font-bold mb-2"></h3>
+                 <img id="modal-img" src="" alt="Microscope view" class="w-full rounded-md">
+                 <p id="modal-description" class="text-sm mt-3 text-gray-600"></p>
+                 <button onclick="closeModal()" class="mt-4 w-full bg-gray-500 hover:bg-gray-600 text-white py-2 rounded-lg">關閉</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        let currentStep = 1;
+        const totalSteps = 5;
+        let userSelections = {
+            grossAppearance: '',
+            grossSize: '',
+            diagnosis: ''
+        };
+
+        function updateProgressBar() {
+            const progress = ((currentStep - 1) / (totalSteps -1)) * 100;
+            document.getElementById('progress-bar').style.width = `${progress}%`;
+        }
+
+        function nextStep() {
+            if (currentStep < totalSteps) {
+                // Save data from current step
+                if (currentStep === 2) {
+                    userSelections.grossAppearance = document.getElementById('gross-appearance').value;
+                    userSelections.grossSize = document.getElementById('gross-size').value;
+                }
+
+                // Move to next step
+                document.getElementById(`step-${currentStep}`).classList.remove('active-section');
+                currentStep++;
+                document.getElementById(`step-${currentStep}`).classList.add('active-section');
+                updateProgressBar();
+
+                // Populate report if it's the last step
+                if (currentStep === totalSteps) {
+                    populateReport();
+                }
+            }
+        }
+        
+        function selectDiagnosis(button, isCorrect) {
+            const options = document.getElementById('diagnosis-options').getElementsByTagName('button');
+            for (let opt of options) {
+                opt.classList.remove('bg-green-200', 'border-green-400', 'bg-red-200', 'border-red-400');
+                opt.classList.add('bg-gray-100');
+            }
+
+            const feedbackEl = document.getElementById('feedback');
+            if (isCorrect) {
+                button.classList.add('bg-green-200', 'border-green-400');
+                feedbackEl.innerHTML = '<strong>正確！</strong>顯微鏡下看到大量嗜中性球浸潤肌肉層，是急性化膿性闌尾炎的典型特徵。';
+                feedbackEl.className = 'mt-4 p-3 rounded-md text-sm bg-green-100 text-green-800';
+                userSelections.diagnosis = button.innerText.substring(3); // Remove "B) "
+                document.getElementById('to-report-btn').disabled = false;
+            } else {
+                button.classList.add('bg-red-200', 'border-red-400');
+                feedbackEl.innerHTML = '<strong>再想想看...</strong> 正常的闌尾不會有大量發炎細胞。類癌則會看到特定的腫瘤細胞巢，這在切片中並未見到。';
+                 feedbackEl.className = 'mt-4 p-3 rounded-md text-sm bg-red-100 text-red-800';
+                document.getElementById('to-report-btn').disabled = true;
+            }
+            feedbackEl.classList.remove('hidden');
+        }
+
+        function populateReport() {
+            document.getElementById('report-date').textContent = new Date().toLocaleDateString('zh-TW');
+            
+            const grossDesc = `收到的檢體為一段闌尾，長度${userSelections.grossSize}，直徑約 0.8 公分。外觀呈現${userSelections.grossAppearance}。`;
+            document.getElementById('report-gross').textContent = grossDesc;
+
+            document.getElementById('report-diagnosis').textContent = userSelections.diagnosis;
+        }
+
+        function restart() {
+            currentStep = 1;
+            userSelections = { grossAppearance: '', grossSize: '', diagnosis: '' };
+            
+            document.querySelectorAll('.step-section').forEach(el => el.classList.remove('active-section'));
+            document.getElementById('step-1').classList.add('active-section');
+            
+            // Reset diagnosis feedback
+            const feedbackEl = document.getElementById('feedback');
+            feedbackEl.classList.add('hidden');
+            const options = document.getElementById('diagnosis-options').getElementsByTagName('button');
+            for (let opt of options) {
+                opt.classList.remove('bg-green-200', 'border-green-400', 'bg-red-200', 'border-red-400');
+                opt.classList.add('bg-gray-100');
+            }
+            document.getElementById('to-report-btn').disabled = true;
+
+            updateProgressBar();
+        }
+
+        function showModal(type) {
+            const modal = document.getElementById('microscope-modal');
+            const modalImg = document.getElementById('modal-img');
+            const modalTitle = document.getElementById('modal-title');
+            const modalDescription = document.getElementById('modal-description');
+
+            if (type === 'low') {
+                modalTitle.innerText = '低倍鏡視野 (40x)';
+                modalImg.src = 'https://placehold.co/800x600/d1e3ff/3b82f6?text=低倍鏡視野';
+                modalImg.alt = '低倍鏡視野下的闌尾切片';
+                modalDescription.innerText = '在低倍鏡下，我們可以看到闌尾壁的全層結構。注意黏膜層(內圈)到肌肉層(外圈)有廣泛的、深紫色的點狀物，這些是發炎細胞的細胞核聚集，顯示有瀰漫性的發炎反應。';
+            } else {
+                modalTitle.innerText = '高倍鏡視野 (400x)';
+                modalImg.src = 'https://placehold.co/800x600/e0d1ff/8b5cf6?text=高倍鏡視野';
+                modalImg.alt = '高倍鏡視野下的闌尾切片';
+                modalDescription.innerText = '在高倍鏡下，我們可以清楚地識別這些發炎細胞。許多細胞核呈現不規則的多葉狀，這些就是嗜中性球。可以看到嗜中性球已浸潤到肌肉層(圖片中粉紅色的束狀結構)之中，這是診斷的關鍵。';
+            }
+            
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.classList.remove('opacity-0'), 10);
+        }
+
+        function closeModal() {
+             const modal = document.getElementById('microscope-modal');
+             modal.classList.add('opacity-0');
+             setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        // Initialize progress bar
+        updateProgressBar();
+    </script>
+</body>
+</html>
+
